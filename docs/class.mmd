@@ -60,10 +60,16 @@ classDiagram
         -String season
         -TechOperation operation
         -WeatherService weatherService
-        -String status
+        -FieldWorkStatus status
         +FieldWork(Field field, String season, TechOperation operation, WeatherService weatherService)
         +boolean complete()
-        +String getStatus()
+        +FieldWorkStatus getStatus()
+    }
+
+    class FieldWorkStatus {
+        <<enumeration>>
+        PLANNED
+        COMPLETED
     }
 
     class CropYieldAnalysis {
@@ -96,6 +102,7 @@ classDiagram
     FieldWork --> Field : для поля
     FieldWork --> TechOperation : виконує операцію
     FieldWork ..> WeatherService : залежність через конструктор
+    FieldWork --> FieldWorkStatus : має стан
     Operator --> WeatherService : передає залежність
     Storekeeper --> Field : обліковує надходження
     Agronomist --> Field : планує культуру
@@ -105,3 +112,5 @@ classDiagram
     note for FarmParticipant "getParticipantId() є final."
     note for Agronomist "selectSeason(String) перевизначає абстрактну операцію."
     note for Field "recordHarvest має перевантаження для надходження з приміткою."
+    note for FieldWorkStatus "PLANNED = ЗАПЛАНОВАНО; COMPLETED = ВИКОНАНО."
+    note for FieldWork "Створюється зі статусом PLANNED; complete() змінює його на COMPLETED лише після успішної перевірки обов'язкових даних."
