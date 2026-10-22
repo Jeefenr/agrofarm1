@@ -1,0 +1,16 @@
+stateDiagram-v2
+    [*] --> RotationPlanning
+    state "Планування сівозміни" as RotationPlanning
+    state "Виконання польових робіт" as FieldWork
+    state "Облік надходження врожаю" as HarvestAccounting
+    state "Аналіз урожайності" as YieldAnalysis
+    state "Недостатньо даних для аналізу" as MissingYieldData
+
+    RotationPlanning --> FieldWork: план поля та сезону визначено
+    FieldWork --> FieldWork: бракує поля, сезону або типу операції\nроботу залишено невиконаною
+    FieldWork --> HarvestAccounting: сезонні роботи виконано
+    HarvestAccounting --> HarvestAccounting: кількість недодатна, дані неповні\nабо надходження вже обліковане
+    HarvestAccounting --> YieldAnalysis: є додатні обліковані надходження сезону
+    HarvestAccounting --> MissingYieldData: надходжень за сезон немає
+    YieldAnalysis --> [*]: результати порівняння показано
+    MissingYieldData --> [*]: повідомлено про відсутність даних

@@ -1,0 +1,107 @@
+classDiagram
+    class FarmParticipant {
+        <<abstract>>
+        -String participantId
+        -String name
+        +FarmParticipant(String participantId, String name)
+        +String getName()
+        +final String getParticipantId()
+        +abstract void selectSeason(String season)
+    }
+
+    class IWorkPlan {
+        <<interface>>
+        +void selectSeason(String season)
+    }
+
+    class Agronomist {
+        -String activeSeason
+        +Agronomist(String participantId, String name)
+        +void selectSeason(String season)
+        +void planCropRotation(Field field, String season, String crop)
+        +String requestYieldAnalysis(CropYieldAnalysis analysis, String season, List~Field~ fields)
+    }
+
+    class Operator {
+        -String activeSeason
+        -WeatherService weatherService
+        +Operator(String participantId, String name, WeatherService weatherService)
+        +void selectSeason(String season)
+        +FieldWork planFieldWork(Field field, String season, TechOperation operation)
+        +void recordFieldWork(FieldWork work)
+    }
+
+    class Storekeeper {
+        -String activeSeason
+        +Storekeeper(String participantId, String name)
+        +void selectSeason(String season)
+        +boolean recordHarvest(Field field, String season, String receiptId, double quantity)
+    }
+
+    class Field {
+        -String fieldId
+        -String name
+        -Map~String, String~ cropBySeason
+        -List~TechOperation~ operations
+        -Map~String, Double~ harvestBySeason
+        -Set~String~ recordedReceiptIds
+        +Field(String fieldId, String name)
+        +void assignCropPlan(String season, String crop)
+        +void addOperation(TechOperation operation)
+        +boolean recordHarvest(String receiptId, String season, double quantity)
+        +boolean recordHarvest(String receiptId, String season, double quantity, String sourceNote)
+        +OptionalDouble getHarvestForSeason(String season)
+        +boolean hasHarvestForSeason(String season)
+        +String getFieldId()
+    }
+
+    class FieldWork {
+        -Field field
+        -String season
+        -TechOperation operation
+        -WeatherService weatherService
+        -String status
+        +FieldWork(Field field, String season, TechOperation operation, WeatherService weatherService)
+        +boolean complete()
+        +String getStatus()
+    }
+
+    class CropYieldAnalysis {
+        +CropYieldAnalysis()
+        +boolean hasDataForSeason(String season, List~Field~ fields)
+        +String analyzeSeason(String season, List~Field~ fields)
+    }
+
+    class WeatherService {
+        -boolean forecastAvailable
+        +WeatherService(boolean forecastAvailable)
+        +Optional~String~ getModeledContext(String fieldId, String season)
+    }
+
+    class TechOperation {
+        -String operationType
+        -String status
+        +TechOperation(String operationType)
+        +void plan()
+        +String getOperationType()
+    }
+
+    FarmParticipant <|-- Agronomist
+    FarmParticipant <|-- Operator
+    FarmParticipant <|-- Storekeeper
+    Agronomist ..|> IWorkPlan
+    Operator ..|> IWorkPlan
+    Storekeeper ..|> IWorkPlan
+    Field "1" *-- "0..*" TechOperation : володіє
+    FieldWork --> Field : для поля
+    FieldWork --> TechOperation : виконує операцію
+    FieldWork ..> WeatherService : залежність через конструктор
+    Operator --> WeatherService : передає залежність
+    Storekeeper --> Field : обліковує надходження
+    Agronomist --> Field : планує культуру
+    Agronomist --> CropYieldAnalysis : запитує аналіз
+    CropYieldAnalysis --> Field : читає дані сезону
+
+    note for FarmParticipant "getParticipantId() є final."
+    note for Agronomist "selectSeason(String) перевизначає абстрактну операцію."
+    note for Field "recordHarvest має перевантаження для надходження з приміткою."

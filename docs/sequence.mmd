@@ -1,0 +1,47 @@
+sequenceDiagram
+    actor Agronomist as Агроном
+    actor Operator as Механізатор
+    actor Storekeeper as Комірник
+    participant Field
+    participant TechOperation
+    participant WeatherService
+    participant FieldWork
+    participant CropYieldAnalysis
+
+    Agronomist->>Agronomist: planCropRotation(field, season, crop)
+    Agronomist->>Field: assignCropPlan(season, crop)
+    Field-->>Agronomist: план поля збережено
+
+    Operator->>Operator: selectSeason(season)
+    Operator->>FieldWork: FieldWork(field, season, operation, weatherService)
+    Operator->>FieldWork: complete()
+    FieldWork->>WeatherService: getModeledContext(fieldId, season)
+    WeatherService-->>FieldWork: модельований контекст або відсутність прогнозу
+    alt Поле, сезон і тип операції визначені
+        FieldWork->>TechOperation: plan()
+        TechOperation-->>FieldWork: заплановану дію повідомлено в консолі
+        FieldWork-->>Operator: статус «виконано»
+    else Бракує поля, сезону або типу операції
+        FieldWork-->>Operator: помилка; роботу не позначено виконаною
+    end
+
+    Storekeeper->>Storekeeper: selectSeason(season)
+    alt Кількість додатна, поле та сезон відомі
+        Storekeeper->>Storekeeper: recordHarvest(field, season, receiptId, quantity)
+        Storekeeper->>Field: recordHarvest(receiptId, season, quantity)
+        Field-->>Storekeeper: надходження обліковано один раз
+    else Кількість недодатна або дані неповні чи повторні
+        Field-->>Storekeeper: помилка; надходження не обліковано
+    end
+
+    Agronomist->>Agronomist: selectSeason(season)
+    Agronomist->>Agronomist: requestYieldAnalysis(analysis, season, fields)
+    Agronomist->>CropYieldAnalysis: hasDataForSeason(season, fields)
+    alt Є обліковані надходження за сезон
+        CropYieldAnalysis->>Field: getHarvestForSeason(season)
+        Field-->>CropYieldAnalysis: кількість або OptionalDouble.empty()
+        Agronomist->>CropYieldAnalysis: analyzeSeason(season, fields)
+        CropYieldAnalysis-->>Agronomist: порівняння за полями вибраного сезону
+    else Надходжень немає
+        CropYieldAnalysis-->>Agronomist: повідомлення про відсутність даних, не нульова урожайність
+    end

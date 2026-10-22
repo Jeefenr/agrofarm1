@@ -1,0 +1,17 @@
+# Java build output
+*.class
+*.jar
+target/
+build/
+out/
+.gradle/
+
+# Local files and editor state
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/
+.env*
+

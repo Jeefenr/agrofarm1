@@ -1,0 +1,19 @@
+@startuml
+left to right direction
+
+actor "Агроном" as Agronomist
+actor "Механізатор" as Operator
+actor "Комірник" as Storekeeper
+
+rectangle "Агропідприємство" {
+  usecase "Планування сівозміни" as PlanRotation
+  usecase "Фіксація польових робіт" as RecordFieldWork
+  usecase "Облік надходження врожаю" as RecordHarvest
+  usecase "Аналіз урожайності за сезон" as AnalyzeYield
+}
+
+Agronomist --> PlanRotation
+Agronomist --> AnalyzeYield
+Operator --> RecordFieldWork
+Storekeeper --> RecordHarvest
+@enduml
