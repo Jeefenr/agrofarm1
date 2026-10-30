@@ -51,9 +51,12 @@ classDiagram
         +void addOperation(TechOperation operation)
         +boolean recordHarvest(String receiptId, String season, double quantity)
         +boolean recordHarvest(String receiptId, String season, double quantity, String sourceNote)
+        +Optional~String~ validateHarvest(String receiptId, String season, double quantity)
         +OptionalDouble getHarvestForSeason(String season)
         +boolean hasHarvestForSeason(String season)
         +String getFieldId()
+        +String getName()
+        +boolean hasOperation(TechOperation operation)
     }
 
     class FieldWork {
@@ -88,9 +91,13 @@ classDiagram
     class TechOperation {
         -String operationType
         -String status
+        -Field owner
         +TechOperation(String operationType)
         +void plan()
         +String getOperationType()
+        +String getStatus()
+        ~void assignTo(Field field)
+        ~boolean belongsTo(Field field)
     }
 
     FarmParticipant <|-- Agronomist
@@ -112,6 +119,6 @@ classDiagram
 
     note for FarmParticipant "getParticipantId() є final."
     note for Agronomist "selectSeason(String) перевизначає абстрактну операцію."
-    note for Field "recordHarvest має перевантаження для надходження з приміткою. Ключ дубліката визначається полем, сезоном і кількістю, а не receiptId чи sourceNote. Обидва варіанти recordHarvest перевіряють і реєструють цей ключ; повтор повертає false без зміни harvestBySeason. recordedReceiptIds додатково відхиляє повторний receiptId."
+    note for Field "recordHarvest має перевантаження для надходження з приміткою. validateHarvest повертає причину відмови без зміни даних. Ключ дубліката визначається полем, сезоном і кількістю, а не receiptId чи sourceNote. Обидва варіанти recordHarvest перевіряють і реєструють цей ключ; повтор повертає false без зміни harvestBySeason. recordedReceiptIds додатково відхиляє повторний receiptId. addOperation закріплює операцію за одним полем, а hasOperation перевіряє належність операції."
     note for FieldWorkStatus "PLANNED = ЗАПЛАНОВАНО; COMPLETED = ВИКОНАНО."
-    note for FieldWork "Створюється зі статусом PLANNED; complete() змінює його на COMPLETED лише після успішної перевірки обов'язкових даних."
+    note for FieldWork "Створюється зі статусом PLANNED; complete() перевіряє поле, непорожній сезон, операцію та її належність полю, і змінює стан на COMPLETED лише після успішної перевірки."
