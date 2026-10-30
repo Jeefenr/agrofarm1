@@ -26,7 +26,7 @@ sequenceDiagram
         WeatherService-->>FieldWork: модельований погодний контекст
     else Прогноз недоступний
         WeatherService-->>FieldWork: Optional.empty()
-        Note over FieldWork: Повідомити про недоступність прогнозу; фактичні умови не визначено
+        Note over FieldWork: Повідомити про недоступність прогнозу, фактичні умови не визначено
     end
     alt Поле, сезон і тип операції визначені
         FieldWork->>TechOperation: plan()
@@ -34,7 +34,7 @@ sequenceDiagram
         Note over FieldWork, Operator: complete() змінює статус PLANNED → COMPLETED
         FieldWork-->>Operator: true — статус COMPLETED / ВИКОНАНО
     else Бракує поля, сезону або типу операції
-        Note over FieldWork, Operator: Повідомити про відсутні дані; статус лишається PLANNED
+        Note over FieldWork, Operator: Повідомити про відсутні дані, статус лишається PLANNED
         FieldWork-->>Operator: false — статус PLANNED / ЗАПЛАНОВАНО
     end
     deactivate FieldWork
@@ -48,12 +48,15 @@ sequenceDiagram
     alt Кількість додатна, поле та сезон визначені
         Note over Storekeeper, Field: Перевірити додатність кількості, поле та сезон
         Storekeeper->>Field: recordHarvest(receiptId, season, quantity)
-        alt Надходження нове
+        alt Ключ надходження новий
             Field-->>Storekeeper: надходження обліковано один раз
             Storekeeper-->>StorekeeperActor: true — надходження обліковано
-        else Надходження вже обліковане
-            Field-->>Storekeeper: повторний receiptId, облік не змінено
+        else Такі самі поле, сезон і кількість, навіть з іншим receiptId
+            Field-->>Storekeeper: ключ уже облікований, сезонна сума не змінена
             Storekeeper-->>StorekeeperActor: false — повторне надходження відхилено
+        else receiptId вже обліковано
+            Field-->>Storekeeper: повторний receiptId, облік не змінено
+            Storekeeper-->>StorekeeperActor: false — повторний receiptId відхилено
         end
     else Кількість недодатна або дані неповні
         Note over Storekeeper: Відхилити надходження та повідомити про помилку

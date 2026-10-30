@@ -45,6 +45,7 @@ classDiagram
         -List~TechOperation~ operations
         -Map~String, Double~ harvestBySeason
         -Set~String~ recordedReceiptIds
+        -Set~String~ recordedHarvestKeys
         +Field(String fieldId, String name)
         +void assignCropPlan(String season, String crop)
         +void addOperation(TechOperation operation)
@@ -111,6 +112,6 @@ classDiagram
 
     note for FarmParticipant "getParticipantId() є final."
     note for Agronomist "selectSeason(String) перевизначає абстрактну операцію."
-    note for Field "recordHarvest має перевантаження для надходження з приміткою."
+    note for Field "recordHarvest має перевантаження для надходження з приміткою. Ключ дубліката визначається полем, сезоном і кількістю, а не receiptId чи sourceNote. Обидва варіанти recordHarvest перевіряють і реєструють цей ключ; повтор повертає false без зміни harvestBySeason. recordedReceiptIds додатково відхиляє повторний receiptId."
     note for FieldWorkStatus "PLANNED = ЗАПЛАНОВАНО; COMPLETED = ВИКОНАНО."
     note for FieldWork "Створюється зі статусом PLANNED; complete() змінює його на COMPLETED лише після успішної перевірки обов'язкових даних."
