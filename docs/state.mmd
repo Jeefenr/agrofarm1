@@ -3,6 +3,8 @@ stateDiagram-v2
     state "Планування сівозміни" as RotationPlanning
     state "FieldWorkStatus: PLANNED / ЗАПЛАНОВАНО" as FieldWorkPlanned
     state "FieldWorkStatus: COMPLETED / ВИКОНАНО" as FieldWorkCompleted
+    state "TechOperation: NOT_PLANNED" as OperationNotPlanned
+    state "TechOperation: PLANNED" as OperationPlanned
     state "Облік надходження врожаю" as HarvestAccounting
     state "Аналіз урожайності" as YieldAnalysis
     state "Недостатньо даних для аналізу" as MissingYieldData
@@ -10,6 +12,10 @@ stateDiagram-v2
     RotationPlanning --> FieldWorkPlanned: роботу для поля, сезону й операції створено
     FieldWorkPlanned --> FieldWorkCompleted: complete() — перевірки успішні
     FieldWorkPlanned --> FieldWorkPlanned: бракує поля, сезону або типу операції\nстатус лишається PLANNED
+    FieldWorkPlanned --> FieldWorkPlanned: операція не належить вибраному полю\nвідмовити, статус лишається PLANNED
+    FieldWorkCompleted --> FieldWorkCompleted: повторний complete() — повідомлення про вже виконану роботу
+    OperationNotPlanned --> OperationPlanned: plan() — змодельовану дію повідомлено
+    OperationPlanned --> OperationPlanned: повторний plan() — стан лишається PLANNED
     FieldWorkCompleted --> HarvestAccounting: сезонні роботи виконано
     HarvestAccounting --> HarvestAccounting: кількість недодатна, дані неповні\nабо надходження вже обліковане
     HarvestAccounting --> YieldAnalysis: є додатні обліковані надходження сезону

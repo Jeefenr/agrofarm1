@@ -1,7 +1,5 @@
 sequenceDiagram
-    actor AgronomistActor as Агроном
-    actor OperatorActor as Механізатор
-    actor StorekeeperActor as Комірник
+    participant DemoMain
     participant Agronomist
     participant Operator
     participant Storekeeper
@@ -11,69 +9,78 @@ sequenceDiagram
     participant FieldWork
     participant CropYieldAnalysis
 
-    AgronomistActor->>Agronomist: planCropRotation(field, season, crop)
+    DemoMain->>Field: створити Північне та Південне поля
+    DemoMain->>TechOperation: створити оранку та сівбу
+    DemoMain->>Field: addOperation для кожного поля
+    DemoMain->>Agronomist: створити учасника
+    DemoMain->>Operator: створити з WeatherService
+    DemoMain->>Storekeeper: створити учасника
+
+    DemoMain->>Agronomist: selectSeason(season)
+    DemoMain->>Agronomist: planCropRotation(northField, season, "пшениця")
+    Agronomist->>Field: assignCropPlan(season, crop)
+    Field-->>Agronomist: план поля збережено
+    DemoMain->>Agronomist: planCropRotation(southField, season, "кукурудза")
     Agronomist->>Field: assignCropPlan(season, crop)
     Field-->>Agronomist: план поля збережено
 
-    OperatorActor->>Operator: selectSeason(season)
-    OperatorActor->>Operator: planFieldWork(field, season, operation)
-    Operator->>FieldWork: FieldWork(field, season, operation, weatherService)
-    FieldWork-->>Operator: створено зі статусом PLANNED / ЗАПЛАНОВАНО
-    Operator->>FieldWork: complete()
-    activate FieldWork
-    alt Поле, сезон і тип операції визначені
-        FieldWork->>Field: hasOperation(operation)
-        alt Операція належить полю
-            FieldWork->>WeatherService: getModeledContext(fieldId, season)
-            alt Модельований прогноз доступний
-                WeatherService-->>FieldWork: модельований погодний контекст
-            else Прогноз недоступний
-                WeatherService-->>FieldWork: Optional.empty()
-                Note over FieldWork: Повідомити про недоступність прогнозу, фактичні умови не визначено
+    DemoMain->>Operator: selectSeason(season)
+    loop Для кожного поля: північного з оранкою та південного із сівбою
+        DemoMain->>Operator: planFieldWork(field, season, operation)
+        Operator->>FieldWork: FieldWork(field, season, operation, weatherService)
+        FieldWork-->>Operator: створено зі статусом PLANNED / ЗАПЛАНОВАНО
+        DemoMain->>Operator: recordFieldWork(work)
+        Operator->>FieldWork: complete()
+        activate FieldWork
+        alt Поле, сезон і тип операції визначені
+            FieldWork->>Field: hasOperation(operation)
+            alt Операція належить полю
+                FieldWork->>WeatherService: getModeledContext(fieldId, season)
+                alt Модельований прогноз доступний
+                    WeatherService-->>FieldWork: модельований погодний контекст
+                else Прогноз недоступний
+                    WeatherService-->>FieldWork: Optional.empty()
+                    Note over FieldWork: Повідомити про недоступність прогнозу, фактичні умови не визначено
+                end
+                FieldWork->>TechOperation: plan()
+                TechOperation-->>FieldWork: заплановану дію повідомлено в консолі
+                Note over FieldWork: complete() змінює статус PLANNED → COMPLETED
+                FieldWork-->>Operator: true — статус COMPLETED / ВИКОНАНО
+            else Операція належить іншому полю
+                Note over FieldWork: Повідомити про невідповідність; статус лишається PLANNED
+                FieldWork-->>Operator: false — статус PLANNED / ЗАПЛАНОВАНО
             end
-            FieldWork->>TechOperation: plan()
-            TechOperation-->>FieldWork: заплановану дію повідомлено в консолі
-            Note over FieldWork, Operator: complete() змінює статус PLANNED → COMPLETED
-            FieldWork-->>Operator: true — статус COMPLETED / ВИКОНАНО
-        else Операція належить іншому полю
-            Note over FieldWork, Operator: Повідомити про невідповідність; статус лишається PLANNED
+        else Бракує поля, сезону або типу операції
+            Note over FieldWork: Повідомити про відсутні дані, статус лишається PLANNED
             FieldWork-->>Operator: false — статус PLANNED / ЗАПЛАНОВАНО
         end
-    else Бракує поля, сезону або типу операції
-        Note over FieldWork, Operator: Повідомити про відсутні дані, статус лишається PLANNED
-        FieldWork-->>Operator: false — статус PLANNED / ЗАПЛАНОВАНО
-    end
-    deactivate FieldWork
-    opt Роботу успішно виконано
-        OperatorActor->>Operator: recordFieldWork(work)
+        deactivate FieldWork
     end
 
-    StorekeeperActor->>Storekeeper: selectSeason(season)
-    StorekeeperActor->>Storekeeper: recordHarvest(field, season, receiptId, quantity)
-    activate Storekeeper
-    alt Поле задане
+    DemoMain->>Storekeeper: selectSeason(season)
+    loop Для кожного поля з демонстраційним надходженням
+        DemoMain->>Storekeeper: recordHarvest(field, season, receiptId, quantity)
         Storekeeper->>Field: validateHarvest(receiptId, season, quantity)
         alt Перевірки успішні
             Storekeeper->>Field: recordHarvest(receiptId, season, quantity)
             Field-->>Storekeeper: надходження обліковано один раз
-            Storekeeper-->>StorekeeperActor: true — надходження обліковано
+            Storekeeper-->>DemoMain: true — надходження обліковано
         else Дані невалідні або повторні
             Field-->>Storekeeper: причина відмови без зміни обліку
-            Storekeeper-->>StorekeeperActor: false — відхилення з причиною
+            Storekeeper-->>DemoMain: false — відхилення з причиною
         end
-    else Поле не задане
-        Storekeeper-->>StorekeeperActor: false — поле не задано, облік не змінено
     end
-    deactivate Storekeeper
 
-    AgronomistActor->>Agronomist: selectSeason(season)
-    AgronomistActor->>Agronomist: requestYieldAnalysis(analysis, season, fields)
+    DemoMain->>Agronomist: requestYieldAnalysis(analysis, season, fields)
     Agronomist->>CropYieldAnalysis: analyzeSeason(season, fields)
+    CropYieldAnalysis->>CropYieldAnalysis: hasDataForSeason(season, fields)
     alt Є обліковані надходження за сезон
-        CropYieldAnalysis->>Field: getHarvestForSeason(season)
-        Field-->>CropYieldAnalysis: кількість або OptionalDouble.empty()
+        loop Для кожного поля зі списку
+            CropYieldAnalysis->>Field: getHarvestForSeason(season)
+            Field-->>CropYieldAnalysis: кількість або OptionalDouble.empty()
+        end
         CropYieldAnalysis-->>Agronomist: порівняння за полями вибраного сезону
-        Agronomist-->>AgronomistActor: результат requestYieldAnalysis
+        Agronomist-->>DemoMain: результат requestYieldAnalysis
     else Надходжень немає
-        Agronomist-->>AgronomistActor: повідомлення про відсутність даних, не нульова урожайність
+        Agronomist-->>DemoMain: повідомлення про відсутність даних, не нульова урожайність
     end

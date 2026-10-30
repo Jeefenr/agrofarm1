@@ -100,6 +100,11 @@ classDiagram
         ~boolean belongsTo(Field field)
     }
 
+    class DemoMain {
+        -DemoMain()
+        +main(String[] args) void$
+    }
+
     FarmParticipant <|-- Agronomist
     FarmParticipant <|-- Operator
     FarmParticipant <|-- Storekeeper
@@ -116,8 +121,16 @@ classDiagram
     Agronomist --> Field : планує культуру
     Agronomist --> CropYieldAnalysis : запитує аналіз
     CropYieldAnalysis --> Field : читає дані сезону
+    DemoMain ..> Field : створює демонстраційні поля
+    DemoMain ..> TechOperation : створює та призначає операції
+    DemoMain ..> Agronomist : створює та запускає
+    DemoMain ..> Operator : створює та запускає
+    DemoMain ..> Storekeeper : створює та запускає
+    DemoMain ..> WeatherService : передає залежність Operator
+    DemoMain ..> CropYieldAnalysis : створює для запиту аналізу
 
     note for FarmParticipant "getParticipantId() є final."
+    note for DemoMain "Композиційний корінь: створює демонстраційні об'єкти й послідовно викликає чотири етапи сценарію; main є static, клас не є предметною сутністю та не має CRC-картки."
     note for Agronomist "selectSeason(String) перевизначає абстрактну операцію."
     note for Field "recordHarvest має перевантаження для надходження з приміткою. validateHarvest повертає причину відмови без зміни даних. Ключ дубліката визначається полем, сезоном і кількістю, а не receiptId чи sourceNote. Обидва варіанти recordHarvest перевіряють і реєструють цей ключ; повтор повертає false без зміни harvestBySeason. recordedReceiptIds додатково відхиляє повторний receiptId. addOperation закріплює операцію за одним полем, а hasOperation перевіряє належність операції."
     note for FieldWorkStatus "PLANNED = ЗАПЛАНОВАНО; COMPLETED = ВИКОНАНО."
