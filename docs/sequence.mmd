@@ -47,7 +47,7 @@ sequenceDiagram
                 Note over FieldWork: complete() змінює статус PLANNED → COMPLETED
             FieldWork-->>Operator: true — статус COMPLETED / ВИКОНАНО
         else Операція належить іншому полю
-            Note over FieldWork: Повідомити про невідповідність; статус лишається PLANNED
+            Note over FieldWork: Повідомити про невідповідність, статус лишається PLANNED
             FieldWork-->>Operator: false — статус PLANNED / ЗАПЛАНОВАНО
         end
         else Бракує поля, сезону або типу операції
