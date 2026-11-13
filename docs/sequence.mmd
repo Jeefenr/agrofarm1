@@ -45,11 +45,11 @@ sequenceDiagram
                 FieldWork->>TechOperation: plan()
                 TechOperation-->>FieldWork: заплановану дію повідомлено в консолі
                 Note over FieldWork: complete() змінює статус PLANNED → COMPLETED
-                FieldWork-->>Operator: true — статус COMPLETED / ВИКОНАНО
-            else Операція належить іншому полю
-                Note over FieldWork: Повідомити про невідповідність; статус лишається PLANNED
-                FieldWork-->>Operator: false — статус PLANNED / ЗАПЛАНОВАНО
-            end
+            FieldWork-->>Operator: true — статус COMPLETED / ВИКОНАНО
+        else Операція належить іншому полю
+            Note over FieldWork: Повідомити про невідповідність; статус лишається PLANNED
+            FieldWork-->>Operator: false — статус PLANNED / ЗАПЛАНОВАНО
+        end
         else Бракує поля, сезону або типу операції
             Note over FieldWork: Повідомити про відсутні дані, статус лишається PLANNED
             FieldWork-->>Operator: false — статус PLANNED / ЗАПЛАНОВАНО
