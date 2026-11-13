@@ -23,7 +23,7 @@ description: "Завдання реалізації збереження дан�
 
 **Мета**: налаштувати Maven для поточної структури проєкту.
 
-- [ ] T001 Налаштувати `pom.xml` як Maven-проєкт `agrofarm` для Java 21 через `maven.compiler.release=21`, додати Guice 7 і `sqlite-jdbc` для застосунку, JUnit Jupiter для тестів, Maven Surefire та Exec Plugin із точкою входу `agrofarm.DemoMain`.
+- [X] T001 Налаштувати `pom.xml` як Maven-проєкт `agrofarm` для Java 21 через `maven.compiler.release=21`, додати Guice 7 і `sqlite-jdbc` для застосунку, JUnit Jupiter для тестів, Maven Surefire та Exec Plugin із точкою входу `agrofarm.DemoMain`.
 
 ---
 
@@ -31,8 +31,8 @@ description: "Завдання реалізації збереження дан�
 
 **Мета**: визначити спільну межу між доменом, сховищем і звітом до реалізації історій.
 
-- [ ] T002 Створити незмінний `OperationRecord` у `src/main/java/agrofarm/OperationRecord.java` з полями `operationId`, `operationType`, `status` і `fieldId`; до збереження всі чотири значення мають бути визначеними непорожніми рядками.
-- [ ] T003 Описати контракт `TechOperationStore` у `src/main/java/agrofarm/TechOperationStore.java` методами предметної області для збереження одного `OperationRecord` і читання всіх записів; помилки сховища мають бути явно передані виклику, а не трактовані як успіх.
+- [X] T002 Створити незмінний `OperationRecord` у `src/main/java/agrofarm/OperationRecord.java` з полями `operationId`, `operationType`, `status` і `fieldId`; до збереження всі чотири значення мають бути визначеними непорожніми рядками.
+- [X] T003 Описати контракт `TechOperationStore` у `src/main/java/agrofarm/TechOperationStore.java` методами предметної області для збереження одного `OperationRecord` і читання всіх записів; помилки сховища мають бути явно передані виклику, а не трактовані як успіх.
 
 **Контрольна точка**: контракти доступні для незалежної реалізації збереження та формування звіту.
 
@@ -46,17 +46,17 @@ description: "Завдання реалізації збереження дан�
 
 ### Тести історії користувача 1
 
-- [ ] T004 [P] [US1] Додати тести в `src/test/java/agrofarm/persistence/SQLiteTechOperationStoreTest.java` для створення схеми, запису й читання всіх полів запису, порожнього результату, збереження після повторного відкриття бази та UPSERT без дубліката за `operationId`.
-- [ ] T005 [P] [US1] Додати тести в `src/test/java/agrofarm/FieldPersistenceTest.java` для конструкторного впровадження `TechOperationStore`, передавання ID саме поля-власника до запису та явного результату невдалого збереження.
+- [X] T004 [P] [US1] Додати тести в `src/test/java/agrofarm/persistence/SQLiteTechOperationStoreTest.java` для створення схеми, запису й читання всіх полів запису, порожнього результату, збереження після повторного відкриття бази та UPSERT без дубліката за `operationId`.
+- [X] T005 [P] [US1] Додати тести в `src/test/java/agrofarm/FieldPersistenceTest.java` для конструкторного впровадження `TechOperationStore`, передавання ID саме поля-власника до запису та явного результату невдалого збереження.
 
 ### Реалізація історії користувача 1
 
-- [ ] T006 [P] [US1] Додати до `src/main/java/agrofarm/TechOperation.java` стабільний непорожній `operationId`, зберегти його незмінним протягом життєвого циклу операції та надати його разом із типом і станом для формування запису.
-- [ ] T007 [US1] Реалізувати `SQLiteTechOperationStore` у `src/main/java/agrofarm/persistence/SQLiteTechOperationStore.java`: створювати таблицю з `operation_id` як первинним ключем і обов'язковими `operation_type`, `status`, `field_id`; виконувати параметризований UPSERT за `operation_id` та читання всіх рядків. Усі SQL-запити мають залишатися в цьому сервісі.
-- [ ] T008 [US1] Створити `DatabaseModule` у `src/main/java/agrofarm/persistence/DatabaseModule.java`, успадкувати `AbstractModule`, зв'язати `TechOperationStore` з SQLite-реалізацією та надати спільне JDBC-з'єднання до `target/agrofarm.db`.
-- [ ] T009 [P] [US1] Створити `FieldIdentityModule` у `src/main/java/agrofarm/config/FieldIdentityModule.java`, щоб дочірній Guice Injector надавав `fieldId` і назву конкретного поля без створення окремого сховища чи з'єднання.
-- [ ] T010 [US1] Змінити `src/main/java/agrofarm/Field.java`: впроваджувати `TechOperationStore` через конструктор, зберегти композиційне володіння операціями та формувати для сховища `OperationRecord` з ID поля-власника й актуальними атрибутами операції.
-- [ ] T011 [US1] Оновити `src/main/java/agrofarm/DemoMain.java`: створювати поля через дочірній Injector та `getInstance(Field.class)`, призначити демонстраційним операціям стабільні ID, зберегти кожну операцію окремим викликом і продовжувати цикл після помилки окремого запису; не змінювати порядок наявних сценаріїв і тексти чинних повідомлень.
+- [X] T006 [P] [US1] Додати до `src/main/java/agrofarm/TechOperation.java` стабільний непорожній `operationId`, зберегти його незмінним протягом життєвого циклу операції та надати його разом із типом і станом для формування запису.
+- [X] T007 [US1] Реалізувати `SQLiteTechOperationStore` у `src/main/java/agrofarm/persistence/SQLiteTechOperationStore.java`: створювати таблицю з `operation_id` як первинним ключем і обов'язковими `operation_type`, `status`, `field_id`; виконувати параметризований UPSERT за `operation_id` та читання всіх рядків. Усі SQL-запити мають залишатися в цьому сервісі.
+- [X] T008 [US1] Створити `DatabaseModule` у `src/main/java/agrofarm/persistence/DatabaseModule.java`, успадкувати `AbstractModule`, зв'язати `TechOperationStore` з SQLite-реалізацією та надати спільне JDBC-з'єднання до `target/agrofarm.db`.
+- [X] T009 [P] [US1] Створити `FieldIdentityModule` у `src/main/java/agrofarm/config/FieldIdentityModule.java`, щоб дочірній Guice Injector надавав `fieldId` і назву конкретного поля без створення окремого сховища чи з'єднання.
+- [X] T010 [US1] Змінити `src/main/java/agrofarm/Field.java`: впроваджувати `TechOperationStore` через конструктор, зберегти композиційне володіння операціями та формувати для сховища `OperationRecord` з ID поля-власника й актуальними атрибутами операції.
+- [X] T011 [US1] Оновити `src/main/java/agrofarm/DemoMain.java`: створювати поля через дочірній Injector та `getInstance(Field.class)`, призначити демонстраційним операціям стабільні ID, зберегти кожну операцію окремим викликом і продовжувати цикл після помилки окремого запису; не змінювати порядок наявних сценаріїв і тексти чинних повідомлень.
 
 **Контрольна точка**: операції зберігаються та читаються незалежно від звіту; повторний запуск із тими самими ID не створює дублікатів.
 
@@ -70,12 +70,12 @@ description: "Завдання реалізації збереження дан�
 
 ### Тести історії користувача 2
 
-- [ ] T012 [P] [US2] Додати тести в `src/test/java/agrofarm/report/HtmlReportGeneratorTest.java` для таблиці фактичних записів, порожнього стану без синтетичних рядків, екранування `<`, `>`, `&` і лапок у текстових значеннях та помітного попередження про помилки збереження.
+- [X] T012 [P] [US2] Додати тести в `src/test/java/agrofarm/report/HtmlReportGeneratorTest.java` для таблиці фактичних записів, порожнього стану без синтетичних рядків, екранування `<`, `>`, `&` і лапок у текстових значеннях та помітного попередження про помилки збереження.
 
 ### Реалізація історії користувача 2
 
-- [ ] T013 [US2] Створити `HtmlReportGenerator` у `src/main/java/agrofarm/report/HtmlReportGenerator.java`: записувати самодостатній звіт у `target/operations.html`, відображати ID операції, тип, стан та ID поля, екранувати всі значення як HTML-текст і формувати порожній стан або попередження відповідно до вхідних даних.
-- [ ] T014 [US2] Доповнити `src/main/java/agrofarm/DemoMain.java`: після спроб усіх записів прочитати базу й передати результат та помилки запису генератору; створювати `target` перед використанням; при помилці читання не створювати успішний звіт, а помилки читання, запису чи створення каталогу явно повідомляти українською без хибного повідомлення про успіх; закрити JDBC-з'єднання.
+- [X] T013 [US2] Створити `HtmlReportGenerator` у `src/main/java/agrofarm/report/HtmlReportGenerator.java`: записувати самодостатній звіт у `target/operations.html`, відображати ID операції, тип, стан та ID поля, екранувати всі значення як HTML-текст і формувати порожній стан або попередження відповідно до вхідних даних.
+- [X] T014 [US2] Доповнити `src/main/java/agrofarm/DemoMain.java`: після спроб усіх записів прочитати базу й передати результат та помилки запису генератору; створювати `target` перед використанням; при помилці читання не створювати успішний звіт, а помилки читання, запису чи створення каталогу явно повідомляти українською без хибного повідомлення про успіх; закрити JDBC-з'єднання.
 
 **Контрольна точка**: звіт відображає фактичний стан бази, а помилка читання не створює успішний HTML-файл.
 
@@ -89,10 +89,10 @@ description: "Завдання реалізації збереження дан�
 
 ### Тести та документація історії користувача 3
 
-- [ ] T015 [P] [US3] Перетворити ручні перевірки з `src/test/java/agrofarm/PrototypeChecks.java` на тести JUnit Jupiter, щоб Maven Surefire автоматично запускав наявні перевірки бізнес-правил разом із новими тестами.
-- [ ] T016 [P] [US3] Оновити кореневий `README.md` українською: описати проєкт, передумови JDK 21 і Maven, команди `mvn test`, `mvn clean package` та `mvn exec:java`, а також шлях до `target/operations.html`.
-- [ ] T017 [P] [US3] Оновити `docs/class.mmd`, показавши `TechOperationStore`, SQLite-реалізацію, `DatabaseModule` із binding/provider, конструкторну залежність `Field`, `OperationRecord`, `FieldIdentityModule` і генератор звіту.
-- [ ] T018 [P] [US3] Оновити `docs/sequence.mmd`, показавши створення модуля й Injector, отримання `Field` через `injector.getInstance(...)`, збереження операцій, читання бази, формування HTML-звіту та обробку помилок.
+- [X] T015 [P] [US3] Перетворити ручні перевірки з `src/test/java/agrofarm/PrototypeChecks.java` на тести JUnit Jupiter, щоб Maven Surefire автоматично запускав наявні перевірки бізнес-правил разом із новими тестами.
+- [X] T016 [P] [US3] Оновити кореневий `README.md` українською: описати проєкт, передумови JDK 21 і Maven, команди `mvn test`, `mvn clean package` та `mvn exec:java`, а також шлях до `target/operations.html`.
+- [X] T017 [P] [US3] Оновити `docs/class.mmd`, показавши `TechOperationStore`, SQLite-реалізацію, `DatabaseModule` із binding/provider, конструкторну залежність `Field`, `OperationRecord`, `FieldIdentityModule` і генератор звіту.
+- [X] T018 [P] [US3] Оновити `docs/sequence.mmd`, показавши створення модуля й Injector, отримання `Field` через `injector.getInstance(...)`, збереження операцій, читання бази, формування HTML-звіту та обробку помилок.
 
 ---
 
@@ -100,7 +100,7 @@ description: "Завдання реалізації збереження дан�
 
 **Мета**: звірити реалізацію, документацію та сценарії запуску.
 
-- [ ] T019 Виконати сценарії з `specs/004-sqlite-guice-storage/quickstart.md`; за результатами узгодити фактичні команди, файли й очікування у `README.md` та `specs/004-sqlite-guice-storage/quickstart.md`.
+- [X] T019 Виконати сценарії з `specs/004-sqlite-guice-storage/quickstart.md`; за результатами узгодити фактичні команди, файли й очікування у `README.md` та `specs/004-sqlite-guice-storage/quickstart.md`.
 
 ---
 

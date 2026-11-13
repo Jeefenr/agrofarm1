@@ -1,5 +1,11 @@
 sequenceDiagram
     participant DemoMain
+    participant DatabaseModule
+    participant FieldIdentityModule
+    participant Injector
+    participant TechOperationStore
+    participant SQLiteTechOperationStore
+    participant HtmlReportGenerator
     participant Agronomist
     participant Operator
     participant Storekeeper
@@ -9,7 +15,17 @@ sequenceDiagram
     participant FieldWork
     participant CropYieldAnalysis
 
-    DemoMain->>Field: створити Північне та Південне поля
+    DemoMain->>DatabaseModule: створити модуль бази даних
+    DemoMain->>Injector: Guice.createInjector(DatabaseModule)
+    DatabaseModule-->>Injector: binding сховища та спільне JDBC-з'єднання
+    loop Для кожного демонстраційного поля
+        DemoMain->>FieldIdentityModule: створити модуль з ID і назвою
+        DemoMain->>Injector: createChildInjector(FieldIdentityModule)
+        Injector->>Field: getInstance(Field.class)
+        Injector->>TechOperationStore: впровадити сховище в конструктор
+        TechOperationStore-->>Field: залежність сховища
+        Field-->>DemoMain: створений об'єкт поля
+    end
     DemoMain->>TechOperation: створити оранку та сівбу
     DemoMain->>Field: addOperation для кожного поля
     DemoMain->>Agronomist: створити учасника
@@ -83,4 +99,26 @@ sequenceDiagram
         Agronomist-->>DemoMain: результат requestYieldAnalysis
     else Надходжень немає
         Agronomist-->>DemoMain: повідомлення про відсутність даних, не нульова урожайність
+    end
+
+    loop Для кожної призначеної технічної операції
+        DemoMain->>Field: saveOperation(operation)
+        Field->>TechOperationStore: save(OperationRecord)
+        TechOperationStore->>SQLiteTechOperationStore: параметризований UPSERT
+        SQLiteTechOperationStore-->>TechOperationStore: запис збережено або помилка
+        TechOperationStore-->>Field: результат збереження
+        Field-->>DemoMain: результат окремого запису
+    end
+    DemoMain->>TechOperationStore: findAll()
+    TechOperationStore->>SQLiteTechOperationStore: прочитати всі записи
+    alt Читання не вдалося
+        SQLiteTechOperationStore-->>DemoMain: повідомлення про помилку; звіт не створюється
+    else Читання успішне
+        SQLiteTechOperationStore-->>DemoMain: фактичні записи з бази
+        DemoMain->>HtmlReportGenerator: generate(records, saveErrors)
+        alt Є помилки збереження
+            HtmlReportGenerator-->>DemoMain: HTML із записами та попередженням
+        else Усі записи збережено
+            HtmlReportGenerator-->>DemoMain: HTML із фактичними записами
+        end
     end

@@ -1,22 +1,13 @@
 package agrofarm;
 
+import org.junit.jupiter.api.Test;
+
 import java.util.List;
 
-public class PrototypeChecks {
-    private PrototypeChecks() {
-    }
-
-    public static void main(String[] args) {
-        checkSuccessfulFieldWork();
-        checkIncompleteAndForeignFieldWork();
-        checkMissingForecast();
-        checkHarvestValidationAndDuplicates();
-        checkSeasonalAnalysis();
-        System.out.println("Усі перевірки прототипу успішно пройдено.");
-    }
-
-    private static void checkSuccessfulFieldWork() {
-        Field field = new Field("F-01", "Тестове поле");
+class PrototypeChecks {
+    @Test
+    void checkSuccessfulFieldWork() {
+        Field field = newField("F-01", "Тестове поле");
         TechOperation operation = new TechOperation("сівба");
         field.addOperation(operation);
         FieldWork work = new FieldWork(field, "2026", operation, new WeatherService(true));
@@ -27,9 +18,10 @@ public class PrototypeChecks {
         check(!work.complete(), "Повторне завершення не має створювати новий перехід.");
     }
 
-    private static void checkIncompleteAndForeignFieldWork() {
-        Field field = new Field("F-01", "Перше поле");
-        Field otherField = new Field("F-02", "Друге поле");
+    @Test
+    void checkIncompleteAndForeignFieldWork() {
+        Field field = newField("F-01", "Перше поле");
+        Field otherField = newField("F-02", "Друге поле");
         TechOperation operation = new TechOperation("обробіток");
         otherField.addOperation(operation);
         checkRejectedWork(new FieldWork(null, "2026", operation, new WeatherService(true)), "без поля");
@@ -50,8 +42,9 @@ public class PrototypeChecks {
         check(work.getStatus() == FieldWorkStatus.PLANNED, "Відхилена робота має лишитися запланованою.");
     }
 
-    private static void checkMissingForecast() {
-        Field field = new Field("F-03", "Поле без прогнозу");
+    @Test
+    void checkMissingForecast() {
+        Field field = newField("F-03", "Поле без прогнозу");
         TechOperation operation = new TechOperation("збирання");
         field.addOperation(operation);
         FieldWork work = new FieldWork(field, "2026", operation, new WeatherService(false));
@@ -59,8 +52,9 @@ public class PrototypeChecks {
         check(work.getStatus() == FieldWorkStatus.COMPLETED, "Робота без прогнозу має завершитися.");
     }
 
-    private static void checkHarvestValidationAndDuplicates() {
-        Field field = new Field("F-01", "Тестове поле");
+    @Test
+    void checkHarvestValidationAndDuplicates() {
+        Field field = newField("F-01", "Тестове поле");
         Storekeeper storekeeper = new Storekeeper("S-01", "Тестовий комірник");
         storekeeper.selectSeason("2026");
 
@@ -80,9 +74,10 @@ public class PrototypeChecks {
                 "Відхилені надходження не мають змінювати сезонну суму.");
     }
 
-    private static void checkSeasonalAnalysis() {
-        Field harvested = new Field("F-01", "Поле з урожаєм");
-        Field withoutHarvest = new Field("F-02", "Поле без урожаю");
+    @Test
+    void checkSeasonalAnalysis() {
+        Field harvested = newField("F-01", "Поле з урожаєм");
+        Field withoutHarvest = newField("F-02", "Поле без урожаю");
         harvested.recordHarvest("R-001", "2026", 12.5);
         harvested.recordHarvest("R-002", "2025", 8.0);
         CropYieldAnalysis analysis = new CropYieldAnalysis();
@@ -104,5 +99,18 @@ public class PrototypeChecks {
         if (!condition) {
             throw new AssertionError(message);
         }
+    }
+
+    private static Field newField(String fieldId, String name) {
+        return new Field(fieldId, name, new TechOperationStore() {
+            @Override
+            public void save(OperationRecord record) {
+            }
+
+            @Override
+            public List<OperationRecord> findAll() {
+                return List.of();
+            }
+        });
     }
 }

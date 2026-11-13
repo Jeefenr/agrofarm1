@@ -41,12 +41,13 @@ classDiagram
     class Field {
         -String fieldId
         -String name
+        -TechOperationStore operationStore
         -Map~String, String~ cropBySeason
         -List~TechOperation~ operations
         -Map~String, Double~ harvestBySeason
         -Set~String~ recordedReceiptIds
         -Set~String~ recordedHarvestKeys
-        +Field(String fieldId, String name)
+        +Field(String fieldId, String name, TechOperationStore operationStore)
         +void assignCropPlan(String season, String crop)
         +void addOperation(TechOperation operation)
         +boolean recordHarvest(String receiptId, String season, double quantity)
@@ -57,6 +58,7 @@ classDiagram
         +String getFieldId()
         +String getName()
         +boolean hasOperation(TechOperation operation)
+        +void saveOperation(TechOperation operation)
     }
 
     class FieldWork {
@@ -89,11 +91,14 @@ classDiagram
     }
 
     class TechOperation {
+        -String operationId
         -String operationType
         -String status
         -Field owner
         +TechOperation(String operationType)
+        +TechOperation(String operationId, String operationType)
         +void plan()
+        +String getOperationId()
         +String getOperationType()
         +String getStatus()
         ~void assignTo(Field field)
@@ -105,6 +110,50 @@ classDiagram
         +main(String[] args) void$
     }
 
+    class OperationRecord {
+        <<record>>
+        +String operationId
+        +String operationType
+        +String status
+        +String fieldId
+    }
+
+    class TechOperationStore {
+        <<interface>>
+        +void save(OperationRecord record) throws SQLException
+        +List~OperationRecord~ findAll() throws SQLException
+    }
+
+    class SQLiteTechOperationStore {
+        -Connection connection
+        +SQLiteTechOperationStore(Connection connection) throws SQLException
+        +void save(OperationRecord record) throws SQLException
+        +List~OperationRecord~ findAll() throws SQLException
+    }
+
+    class DatabaseModule {
+        #configure()
+        ~Connection provideConnection() throws SQLException
+    }
+
+    class FieldIdentityModule {
+        -String fieldId
+        -String fieldName
+        +FieldIdentityModule(String fieldId, String fieldName)
+    }
+
+    class HtmlReportGenerator {
+        +void generate(Path reportPath, List~OperationRecord~ records, List~String~ saveErrors)
+    }
+
+    class AbstractModule {
+        <<external>>
+    }
+
+    class Connection {
+        <<interface>>
+    }
+
     FarmParticipant <|-- Agronomist
     FarmParticipant <|-- Operator
     FarmParticipant <|-- Storekeeper
@@ -112,6 +161,16 @@ classDiagram
     Operator ..|> IWorkPlan
     Storekeeper ..|> IWorkPlan
     Field "1" *-- "0..*" TechOperation : володіє
+    Field --> TechOperationStore : конструкторна залежність
+    Field ..> OperationRecord : формує для збереження
+    TechOperationStore <|.. SQLiteTechOperationStore
+    AbstractModule <|-- DatabaseModule
+    AbstractModule <|-- FieldIdentityModule
+    DatabaseModule ..> TechOperationStore : зв'язує з реалізацією
+    DatabaseModule ..> Connection : надає спільне JDBC-з'єднання
+    FieldIdentityModule ..> Field : надає ID і назву дочірньому Injector
+    SQLiteTechOperationStore ..> OperationRecord : читає та зберігає
+    HtmlReportGenerator ..> OperationRecord : формує HTML
     FieldWork --> Field : для поля
     FieldWork --> TechOperation : виконує операцію
     FieldWork ..> WeatherService : залежність через конструктор
@@ -121,7 +180,10 @@ classDiagram
     Agronomist --> Field : планує культуру
     Agronomist --> CropYieldAnalysis : запитує аналіз
     CropYieldAnalysis --> Field : читає дані сезону
-    DemoMain ..> Field : створює демонстраційні поля
+    DemoMain ..> Field : отримує через injector.getInstance(...)
+    DemoMain ..> DatabaseModule : створює кореневий Injector
+    DemoMain ..> FieldIdentityModule : створює дочірні Injector
+    DemoMain ..> HtmlReportGenerator : формує статичний звіт
     DemoMain ..> TechOperation : створює та призначає операції
     DemoMain ..> Agronomist : створює та запускає
     DemoMain ..> Operator : створює та запускає

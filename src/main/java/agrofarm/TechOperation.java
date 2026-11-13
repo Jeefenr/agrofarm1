@@ -1,14 +1,26 @@
 package agrofarm;
 
-import java.util.Objects;
+import java.util.UUID;
 
 public class TechOperation {
+    private final String operationId;
     private final String operationType;
     private String status;
     private Field owner;
 
     public TechOperation(String operationType) {
-        this.operationType = Objects.requireNonNull(operationType, "Тип операції не задано");
+        this(UUID.randomUUID().toString(), operationType);
+    }
+
+    public TechOperation(String operationId, String operationType) {
+        if (operationId == null || operationId.isBlank()) {
+            throw new IllegalArgumentException("Ідентифікатор операції не може бути порожнім.");
+        }
+        this.operationId = operationId;
+        if (operationType == null || operationType.isBlank()) {
+            throw new IllegalArgumentException("Тип операції не може бути порожнім.");
+        }
+        this.operationType = operationType;
         this.status = "NOT_PLANNED";
     }
 
@@ -19,6 +31,10 @@ public class TechOperation {
 
     public String getOperationType() {
         return operationType;
+    }
+
+    public String getOperationId() {
+        return operationId;
     }
 
     public String getStatus() {

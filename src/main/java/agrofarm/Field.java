@@ -1,10 +1,15 @@
 package agrofarm;
 
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.Set;
@@ -12,13 +17,16 @@ import java.util.Set;
 public class Field {
     private final String fieldId;
     private final String name;
+    private final TechOperationStore operationStore;
     private final Map<String, String> cropBySeason = new LinkedHashMap<>();
     private final List<TechOperation> operations = new ArrayList<>();
     private final Map<String, Double> harvestBySeason = new LinkedHashMap<>();
     private final Set<String> recordedReceiptIds = new HashSet<>();
     private final Set<String> recordedHarvestKeys = new HashSet<>();
 
-    public Field(String fieldId, String name) {
+    @Inject
+    public Field(@Named("fieldId") String fieldId, @Named("fieldName") String name,
+                 TechOperationStore operationStore) {
         if (fieldId == null || fieldId.isBlank()) {
             throw new IllegalArgumentException("Ідентифікатор поля не може бути порожнім.");
         }
@@ -27,6 +35,7 @@ public class Field {
         }
         this.fieldId = fieldId;
         this.name = name;
+        this.operationStore = Objects.requireNonNull(operationStore, "Сховище операцій не задано.");
     }
 
     public void assignCropPlan(String season, String crop) {
@@ -51,6 +60,14 @@ public class Field {
 
     public boolean hasOperation(TechOperation operation) {
         return operation != null && operation.belongsTo(this) && operations.contains(operation);
+    }
+
+    public void saveOperation(TechOperation operation) throws SQLException {
+        if (!hasOperation(operation)) {
+            throw new IllegalArgumentException("Технічна операція не належить цьому полю.");
+        }
+        operationStore.save(new OperationRecord(operation.getOperationId(), operation.getOperationType(),
+                operation.getStatus(), fieldId));
     }
 
     public boolean recordHarvest(String receiptId, String season, double quantity) {
